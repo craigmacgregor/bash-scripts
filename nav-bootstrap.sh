@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 echo $(date -u) "Updating Bootstrap"
-  
+
 AWS="/home/bootstrap/.local/bin/aws"
 
 VERSION="4.5.2"
@@ -16,7 +16,8 @@ NAVEXURL="https://api.navexplorer.com/api/block/$BLOCKCOUNT"
 
 NXTRIES=0
 while [ "$NXTRIES" -lt 5 ]; do
-        NAVEXBLOCKHASH=`curl -s $NAVEXURL | jq -r '.hash'`
+        NAVEXDATA=`curl -s $NAVEXURL`
+        NAVEXBLOCKHASH=`echo $NAVEXDATA | jq -r '.hash'`
         echo "NAVEXBLOCKHASH" $NAVEXBLOCKHASH
         if [ "$NAVEXBLOCKHASH" == "null" ]; then
                 NXTRIES=$[$TRIES+1]
@@ -24,6 +25,10 @@ while [ "$NXTRIES" -lt 5 ]; do
                 NXTRIES=5
         fi
 done
+
+NAVEXBEST=`echo $NAVEXDATA | jq -r '.best'`
+
+echo "NAVEXBEST" $NAVEXBEST
 
 CIDURL="https://chainz.cryptoid.info/nav/api.dws?q=getblockhash&height=$BLOCKCOUNT"
 
@@ -49,6 +54,10 @@ ERROR=0
 
 if [ "$NAVEXBLOCKHASH" == "null" ]; then
         MESSAGE="NavExplorer could not return the blockhash"
+        echo $MESSAGE
+        ERROR=1
+elif [ "$NAVEXBEST" == "false" ]; then
+        MESSAGE="NavExplorer determines the bootstrap is not up to date"
         echo $MESSAGE
         ERROR=1
 elif [ "$NAVEXBLOCKHASH" != "$BLOCKHASH" ]; then
