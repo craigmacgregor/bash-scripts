@@ -3,7 +3,7 @@
 echo $(date -u) "Updating Bootstrap"
 
 VERSION="4.7.1"
-USER="XXXXX"
+USER="XXXX"
 
 BLOCKCOUNT=`/home/$USER/navcoin-$VERSION/bin/navcoin-cli getblockcount`
 BLOCKHASH=`/home/$USER/navcoin-$VERSION/bin/navcoin-cli getblockhash $BLOCKCOUNT`
@@ -19,7 +19,7 @@ while [ "$NXTRIES" -lt 5 ]; do
         NAVEXBLOCKHASH=`echo $NAVEXDATA | jq -r '.hash'`
         echo "NAVEXBLOCKHASH" $NAVEXBLOCKHASH
         if [ "$NAVEXBLOCKHASH" == "null" ]; then
-                NXTRIES=$[$TRIES+1]
+                NXTRIES=$[$NXTRIES+1]
         else
                 NXTRIES=5
         fi
@@ -41,11 +41,11 @@ while [ "$CIDTRIES" -lt 5 ]; do
                         echo "CIDBLOCKHASH" $CIDBLOCKHASH       
                         CIDTRIES=5
                 else
-                        CIDTRIES=$[$TRIES+1]
+                        CIDTRIES=$[$CIDTRIES+1]
                 fi
 
         else
-                CIDTRIES=$[$TRIES+1]
+                CIDTRIES=$[$CIDTRIES+1]
         fi
 done
 
@@ -63,14 +63,14 @@ elif [ "$NAVEXBLOCKHASH" != "$BLOCKHASH" ]; then
         MESSAGE="NavExplorer blockhash did not match the bootstrap blockhash"
         echo $MESSAGE
         ERROR=2
-#elif [ "$CIDBLOCKHASH" != "$BLOCKHASH" ]; then
-#        MESSAGE="CryptoID blockhash did not match the bootstrap blockhash"
-#        echo $MESSAGE
-#        ERROR=2
-#elif [ "$NAVEXBLOCKHASH" != "$CIDBLOCKHASH" ]; then
-#        MESSAGE="NavExplorer blockhash did not match the CryptoID blockhash"
-#        echo $MESSAGE
-#        ERROR=2
+elif [ "$CIDBLOCKHASH" != "$BLOCKHASH" ]; then
+        MESSAGE="CryptoID blockhash did not match the bootstrap blockhash"
+        echo $MESSAGE
+        ERROR=2
+elif [ "$NAVEXBLOCKHASH" != "$CIDBLOCKHASH" ]; then
+        MESSAGE="NavExplorer blockhash did not match the CryptoID blockhash"
+        echo $MESSAGE
+        ERROR=2
 else
         echo "SUCCESS";
 fi
@@ -83,7 +83,12 @@ fi
 
 /home/$USER/navcoin-$VERSION/bin/navcoin-cli stop
 
-wait
+SLEEP=0
+while [ "$SLEEP" -lt 60 ]; do
+        echo "Sleeping... " $SLEEP
+        SLEEP=$[$SLEEP+1]
+	sleep 1s
+done
 
 cd /home/$USER/.navcoin4
 
