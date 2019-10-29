@@ -2,12 +2,11 @@
 
 echo $(date -u) "Updating Bootstrap"
 
-AWS="/home/bootstrap/.local/bin/aws"
+VERSION="4.7.1"
+USER="XXXXX"
 
-VERSION="4.5.2"
-
-BLOCKCOUNT=`/home/bootstrap/navcoin-$VERSION/bin/navcoin-cli getblockcount`
-BLOCKHASH=`/home/bootstrap/navcoin-$VERSION/bin/navcoin-cli getblockhash $BLOCKCOUNT`
+BLOCKCOUNT=`/home/$USER/navcoin-$VERSION/bin/navcoin-cli getblockcount`
+BLOCKHASH=`/home/$USER/navcoin-$VERSION/bin/navcoin-cli getblockhash $BLOCKCOUNT`
 
 echo "BLOCKCOUNT" $BLOCKCOUNT
 echo "BLOCKHASH" $BLOCKHASH
@@ -64,14 +63,14 @@ elif [ "$NAVEXBLOCKHASH" != "$BLOCKHASH" ]; then
         MESSAGE="NavExplorer blockhash did not match the bootstrap blockhash"
         echo $MESSAGE
         ERROR=2
-elif [ "$CIDBLOCKHASH" != "$BLOCKHASH" ]; then
-        MESSAGE="CryptoID blockhash did not match the bootstrap blockhash"
-        echo $MESSAGE
-        ERROR=2
-elif [ "$NAVEXBLOCKHASH" != "$CIDBLOCKHASH" ]; then
-        MESSAGE="NavExplorer blockhash did not match the CryptoID blockhash"
-        echo $MESSAGE
-        ERROR=2
+#elif [ "$CIDBLOCKHASH" != "$BLOCKHASH" ]; then
+#        MESSAGE="CryptoID blockhash did not match the bootstrap blockhash"
+#        echo $MESSAGE
+#        ERROR=2
+#elif [ "$NAVEXBLOCKHASH" != "$CIDBLOCKHASH" ]; then
+#        MESSAGE="NavExplorer blockhash did not match the CryptoID blockhash"
+#        echo $MESSAGE
+#        ERROR=2
 else
         echo "SUCCESS";
 fi
@@ -82,22 +81,20 @@ if [ "$ERROR" != 0 ]; then
         exit 0;
 fi
 
-/home/bootstrap/navcoin-$VERSION/bin/navcoin-cli stop
+/home/$USER/navcoin-$VERSION/bin/navcoin-cli stop
 
 wait
 
-cd /home/bootstrap/.navcoin4
+cd /home/$USER/.navcoin4
 
 ARCHIVE="bootstrap-navcoin_mainnet"
 
 tar cvf $ARCHIVE-new.tar blocks chainstate
 
-/home/bootstrap/navcoin-$VERSION/bin/navcoind &
+/home/$USER/navcoin-$VERSION/bin/navcoind &
 
-$AWS s3 cp $ARCHIVE-new.tar s3://navcoin-bootstrap/
+cp $ARCHIVE-new.tar /home/$USER/www/navcoin-bootstrap/$ARCHIVE.tar
 
 rm $ARCHIVE-new.tar
-
-$AWS s3 mv s3://navcoin-bootstrap/$ARCHIVE-new.tar s3://navcoin-bootstrap/$ARCHIVE.tar --acl public-read
 
 echo $(date -u) "Bootstrap Updated"
