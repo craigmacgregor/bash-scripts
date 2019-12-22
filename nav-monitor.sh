@@ -168,7 +168,7 @@ send() {
 
 if [ "$ERROR" != 0 ]; then
         ERROR_MESSAGE=$"Bootstrap Failed -  ERROR $ERROR - $MESSAGE"
-        `echo $ERROR_MESSAGE | mail -s 'NavCoin Network Monitor' craig@encrypt-s.com`
+        `echo $ERROR_MESSAGE | mail -s 'NavCoin Network Monitor' <email address>`
 	send "Height: $BLOCKCOUNT %0AHash: $BLOCKHASH %0AServer Timestamp: $NOW %0ANavExplorer Hash: $NAVEXBLOCKHASH %0ANavExplorer Timestamp: $NAVEXTIMESTAMP %0ANavExplorer Confirmations: $NAVEXCONFIRMS %0ACryptoID Hash: $CIDBLOCKHASH %0ACryptoID Timestamp: $CIDBLOCKTIME %0ABlock Tolerance: $TOLERANCE %0A%0A@proletesseract"
 else
 	send "Height: $BLOCKCOUNT %0AHash: $BLOCKHASH"
