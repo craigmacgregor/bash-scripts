@@ -14,143 +14,143 @@ MONITOR_SLEEP=5
 
 while [ "$MONITOR_TRIES" -lt "$MAX_TRIES" ]; do
 
-NOW=`date +"%s"`
+	NOW=`date +"%s"`
 
-echo "NOW" $NOW
+	echo "NOW" $NOW
 
-BLOCKCOUNT=`/home/$USER/navcoin-$VERSION/bin/navcoin-cli getblockcount`
-BLOCKHASH=`/home/$USER/navcoin-$VERSION/bin/navcoin-cli getblockhash $BLOCKCOUNT`
+	BLOCKCOUNT=`/home/$USER/navcoin-$VERSION/bin/navcoin-cli getblockcount`
+	BLOCKHASH=`/home/$USER/navcoin-$VERSION/bin/navcoin-cli getblockhash $BLOCKCOUNT`
 
-echo "BLOCKCOUNT" $BLOCKCOUNT
-echo "BLOCKHASH" $BLOCKHASH
+	echo "BLOCKCOUNT" $BLOCKCOUNT
+	echo "BLOCKHASH" $BLOCKHASH
 
-NAVEXURL="https://api.navexplorer.com/api/block/$BLOCKCOUNT"
+	NAVEXURL="https://api.navexplorer.com/api/block/$BLOCKCOUNT"
 
-NXTRIES=0
-while [ "$NXTRIES" -lt "$MAX_API_TRIES" ]; do
-        NAVEXDATA=`curl -s $NAVEXURL`
-        NAVEXBLOCKHASH=`echo $NAVEXDATA | jq -r '.hash'`
-        echo "NAVEXBLOCKHASH" $NAVEXBLOCKHASH
-        if [ "$NAVEXBLOCKHASH" == "null" ]; then
-                NXTRIES=$[$NXTRIES+1]
-		echo "Invalid block data from NavExplorer: Attempt $NXTRIES, Data $NAVEXDATA"
-		sleep $API_SLEEP
-        else
-                NXTRIES=$[MAX_API_TRIES]
-        fi
-done
-
-NAVEXCONFIRMS=`echo $NAVEXDATA | jq -r '.confirmations'`
-NAVEXTIME=`echo $NAVEXDATA | jq -r '.created'`
-
-echo "NAVEXDATA $NAVEXDATA"
-
-echo "NAVEXCONFIRMS" $NAVEXCONFIRMS
-echo "NAVEXTIME" $NAVEXTIME
-
-NAVEXTIMESTAMP=`date -d $NAVEXTIME +%s`
-
-echo "NAVEXTIMESTAMP" $NAVEXTIMESTAMP
-
-CIDURL="https://chainz.cryptoid.info/nav/api.dws?q=getblockhash&height=$BLOCKCOUNT"
-
-CIDTRIES=0
-while [ "$CIDTRIES" -lt "$MAX_API_TRIES" ]; do
-        CIDDATA=`curl -s $CIDURL`
-        if [ ${#CIDDATA} == 66 ]; then
-                NO_WHITESPACE="$(echo -e "${CIDDATA}" | tr -d '[:space:]')"
-                if [ ${#NO_WHITESPACE} == 66 ]; then
-                        CIDBLOCKHASH=${NO_WHITESPACE:1:64}
-                        echo "CIDBLOCKHASH" $CIDBLOCKHASH       
-                        CIDTRIES=$[MAX_API_TRIES]
-                else
+	NXTRIES=0
+	while [ "$NXTRIES" -lt "$MAX_API_TRIES" ]; do
+		NAVEXDATA=`curl -s $NAVEXURL`
+		NAVEXBLOCKHASH=`echo $NAVEXDATA | jq -r '.hash'`
+		echo "NAVEXBLOCKHASH" $NAVEXBLOCKHASH
+		if [ "$NAVEXBLOCKHASH" == "null" ]; then
+			NXTRIES=$[$NXTRIES+1]
+			echo "Invalid block data from NavExplorer: Attempt $NXTRIES, Data $NAVEXDATA"
 			sleep $API_SLEEP
-			echo "Invalid blockhash from CryptoID: Attempt $CIDTRIES, Data $CIDDATA"
-                        CIDTRIES=$[$CIDTRIES+1]
-                fi
+		else
+			NXTRIES=$[MAX_API_TRIES]
+		fi
+	done
 
-        else
-		sleep $API_SLEEP
-		echo "Failed to get blockhash from CryptoID: Attempt $CIDTRIES, Data $CIDDATA"
-                CIDTRIES=$[$CIDTRIES+1]
-        fi
-done
+	NAVEXCONFIRMS=`echo $NAVEXDATA | jq -r '.confirmations'`
+	NAVEXTIME=`echo $NAVEXDATA | jq -r '.created'`
 
-CIDTIMEURL="https://chainz.cryptoid.info/nav/api.dws?q=getblocktime&height=$BLOCKCOUNT"
+	echo "NAVEXDATA $NAVEXDATA"
 
-echo "CIDBLOCKHASH" $CIDBLOCKHASH
+	echo "NAVEXCONFIRMS" $NAVEXCONFIRMS
+	echo "NAVEXTIME" $NAVEXTIME
 
-CIDTRIES=0
-while [ "$CIDTRIES" -lt "$MAX_API_TRIES" ]; do
-        CIDTIMEDATA=`curl -s $CIDTIMEURL`
-        if [ ${#CIDTIMEDATA} == 10 ]; then
-                NO_WHITESPACE="$(echo -e "${CIDTIMEDATA}" | tr -d '[:space:]')"
-                if [ ${#NO_WHITESPACE} == 10 ]; then
-                        CIDBLOCKTIME=${NO_WHITESPACE:0:10}
-                        echo "CIDBLOCKTIME" $CIDBLOCKTIME
-                        CIDTRIES=$[MAX_API_TRIES]
-                else
+	NAVEXTIMESTAMP=`date -d $NAVEXTIME +%s`
+
+	echo "NAVEXTIMESTAMP" $NAVEXTIMESTAMP
+
+	CIDURL="https://chainz.cryptoid.info/nav/api.dws?q=getblockhash&height=$BLOCKCOUNT"
+
+	CIDTRIES=0
+	while [ "$CIDTRIES" -lt "$MAX_API_TRIES" ]; do
+		CIDDATA=`curl -s $CIDURL`
+		if [ ${#CIDDATA} == 66 ]; then
+			NO_WHITESPACE="$(echo -e "${CIDDATA}" | tr -d '[:space:]')"
+			if [ ${#NO_WHITESPACE} == 66 ]; then
+				CIDBLOCKHASH=${NO_WHITESPACE:1:64}
+				echo "CIDBLOCKHASH" $CIDBLOCKHASH       
+				CIDTRIES=$[MAX_API_TRIES]
+			else
+				sleep $API_SLEEP
+				echo "Invalid blockhash from CryptoID: Attempt $CIDTRIES, Data $CIDDATA"
+				CIDTRIES=$[$CIDTRIES+1]
+			fi
+
+		else
 			sleep $API_SLEEP
-			echo "Invalid blockhash from CryptoID: Attempt $CIDTRIES, Data $CIDTIMEDATA"
-                        CIDTRIES=$[$CIDTRIES+1]
-                fi
+			echo "Failed to get blockhash from CryptoID: Attempt $CIDTRIES, Data $CIDDATA"
+			CIDTRIES=$[$CIDTRIES+1]
+		fi
+	done
 
-        else
-		sleep $API_SLEEP
-		echo "Failed to get time from CryptoID: Attempt $CIDTRIES, Data $CIDTIMEDATA"
-                CIDTRIES=$[$CIDTRIES+1]
-        fi
-done
+	CIDTIMEURL="https://chainz.cryptoid.info/nav/api.dws?q=getblocktime&height=$BLOCKCOUNT"
 
-ERROR=0
+	echo "CIDBLOCKHASH" $CIDBLOCKHASH
 
-TIME_TOLERANCE=`echo $(($NOW - $TOLERANCE*30))`
+	CIDTRIES=0
+	while [ "$CIDTRIES" -lt "$MAX_API_TRIES" ]; do
+		CIDTIMEDATA=`curl -s $CIDTIMEURL`
+		if [ ${#CIDTIMEDATA} == 10 ]; then
+			NO_WHITESPACE="$(echo -e "${CIDTIMEDATA}" | tr -d '[:space:]')"
+			if [ ${#NO_WHITESPACE} == 10 ]; then
+				CIDBLOCKTIME=${NO_WHITESPACE:0:10}
+				echo "CIDBLOCKTIME" $CIDBLOCKTIME
+				CIDTRIES=$[MAX_API_TRIES]
+			else
+				sleep $API_SLEEP
+				echo "Invalid blockhash from CryptoID: Attempt $CIDTRIES, Data $CIDTIMEDATA"
+				CIDTRIES=$[$CIDTRIES+1]
+			fi
 
-echo "TIME_TOLERANCE" $TIME_TOLERANCE
+		else
+			sleep $API_SLEEP
+			echo "Failed to get time from CryptoID: Attempt $CIDTRIES, Data $CIDTIMEDATA"
+			CIDTRIES=$[$CIDTRIES+1]
+		fi
+	done
 
-if [ "$NAVEXBLOCKHASH" == "null" ]; then
-        MESSAGE="NavExplorer could not return the blockhash"
-        echo $MESSAGE
-        ERROR=1
-elif [ "$NAVEXCONFIRMS" -gt "$TOLERANCE" ]; then
-        MESSAGE="NavExplorer determines the NavMonitor is more than $TOLERANCE blocks behind NavExplorer"
-        echo $MESSAGE
-        ERROR=1
-elif [ "$NAVEXBLOCKHASH" != "$BLOCKHASH" ]; then
-        MESSAGE="NavExplorer blockhash did not match the NavMonitor blockhash [$BLOCKHASH] [$NAVEXBLOCKHASH]"
-        echo $MESSAGE
-        ERROR=2
-elif [ "$CIDBLOCKHASH" != "$BLOCKHASH" ]; then
-        MESSAGE="CryptoID blockhash did not match the NavMonitor blockhash [$BLOCKHASH] [$CIDBLOCKHASH]"
-        echo $MESSAGE
-        ERROR=2
-elif [ "$NAVEXBLOCKHASH" != "$CIDBLOCKHASH" ]; then
-        MESSAGE="NavExplorer blockhash did not match the CryptoID blockhash [$NAVEXBLOCKHASH] [$CIDBLOCKHASH]"
-        echo $MESSAGE
-        ERROR=2
-elif [ "$NAVEXTIMESTAMP" != "$CIDBLOCKTIME" ]; then
-	MESSAGE="NavExplorer and CryptoID block timestamps mismatch [$NAVEXTIMESTAMP] [$CIDBLOCKTIME]"
-	echo $MESSAGE
-	ERROR=3
-elif [ "$NAVEXTIMESTAMP" -lt "$TIME_TOLERANCE" ]; then
-	MESSAGE="NavExplorer block timepstamp is older than ($TOLERANCE*30) seconds"
-        echo $MESSAGE
-        ERROR=3
-elif [ "$CIDBLOCKTIME" -lt "$TIME_TOLERANCE" ]; then
-	MESSAGE="CryptoID block timepstamp is older than ($TOLERANCE*30) seconds"
-	echo $MESSAGE
-        ERROR=3
-else
-	MESSAGE="All Checks Successful"
-        echo $MESSAGE;
-fi
+	ERROR=0
 
-if [ "$ERROR" != 0 ]; then
-	MONITOR_TRIES=$[MONITOR_TRIES+1]
-	sleep $MONITOR_SLEEP
-else
-	MONITOR_TRIES=[$MAX_TRIES]
-fi
+	TIME_TOLERANCE=`echo $(($NOW - $TOLERANCE*30))`
+
+	echo "TIME_TOLERANCE" $TIME_TOLERANCE
+
+	if [ "$NAVEXBLOCKHASH" == "null" ]; then
+		MESSAGE="NavExplorer could not return the blockhash"
+		echo $MESSAGE
+		ERROR=1
+	elif [ "$NAVEXCONFIRMS" -gt "$TOLERANCE" ]; then
+		MESSAGE="NavExplorer determines the NavMonitor is more than $TOLERANCE blocks behind NavExplorer"
+		echo $MESSAGE
+		ERROR=1
+	elif [ "$NAVEXBLOCKHASH" != "$BLOCKHASH" ]; then
+		MESSAGE="NavExplorer blockhash did not match the NavMonitor blockhash [$BLOCKHASH] [$NAVEXBLOCKHASH]"
+		echo $MESSAGE
+		ERROR=2
+	elif [ "$CIDBLOCKHASH" != "$BLOCKHASH" ]; then
+		MESSAGE="CryptoID blockhash did not match the NavMonitor blockhash [$BLOCKHASH] [$CIDBLOCKHASH]"
+		echo $MESSAGE
+		ERROR=2
+	elif [ "$NAVEXBLOCKHASH" != "$CIDBLOCKHASH" ]; then
+		MESSAGE="NavExplorer blockhash did not match the CryptoID blockhash [$NAVEXBLOCKHASH] [$CIDBLOCKHASH]"
+		echo $MESSAGE
+		ERROR=2
+	elif [ "$NAVEXTIMESTAMP" != "$CIDBLOCKTIME" ]; then
+		MESSAGE="NavExplorer and CryptoID block timestamps mismatch [$NAVEXTIMESTAMP] [$CIDBLOCKTIME]"
+		echo $MESSAGE
+		ERROR=3
+	elif [ "$NAVEXTIMESTAMP" -lt "$TIME_TOLERANCE" ]; then
+		MESSAGE="NavExplorer block timepstamp is older than ($TOLERANCE*30) seconds"
+		echo $MESSAGE
+		ERROR=3
+	elif [ "$CIDBLOCKTIME" -lt "$TIME_TOLERANCE" ]; then
+		MESSAGE="CryptoID block timepstamp is older than ($TOLERANCE*30) seconds"
+		echo $MESSAGE
+		ERROR=3
+	else
+		MESSAGE="All Checks Successful"
+		echo $MESSAGE;
+	fi
+
+	if [ "$ERROR" != 0 ]; then
+		MONITOR_TRIES=$[MONITOR_TRIES+1]
+		sleep $MONITOR_SLEEP
+	else
+		MONITOR_TRIES=[$MAX_TRIES]
+	fi
 
 done #end while
 
