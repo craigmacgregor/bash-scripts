@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-echo $(date -u) "Updating Bootstrap"
+echo $(date -u) "Running Network Monitor"
 
 VERSION="4.7.2"
 USER="<linux username>"
