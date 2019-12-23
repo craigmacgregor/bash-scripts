@@ -4,13 +4,14 @@ echo "----------------------------------------------------------"
 echo $(date -u) "Running Network Monitor"
 
 VERSION="4.7.2"
-USER="<linux username>"
-TOLERANCE=3
+USER="<USER>"
+TOLERANCE=10
 MAX_TRIES=3
 MONITOR_TRIES=0
 MAX_API_TRIES=5
 API_SLEEP=2
 MONITOR_SLEEP=5
+DEPTH=5
 
 while [ "$MONITOR_TRIES" -lt "$MAX_TRIES" ]; do
 
@@ -19,6 +20,7 @@ while [ "$MONITOR_TRIES" -lt "$MAX_TRIES" ]; do
 	echo "NOW" $NOW
 
 	BLOCKCOUNT=`/home/$USER/navcoin-$VERSION/bin/navcoin-cli getblockcount`
+	BLOCKCOUNT=$[$BLOCKCOUNT - $DEPTH]
 	BLOCKHASH=`/home/$USER/navcoin-$VERSION/bin/navcoin-cli getblockhash $BLOCKCOUNT`
 
 	echo "BLOCKCOUNT" $BLOCKCOUNT
@@ -154,8 +156,8 @@ while [ "$MONITOR_TRIES" -lt "$MAX_TRIES" ]; do
 
 done #end while
 
-API_TOKEN="<telegram api token>"
-CHAT_ID="<telegram chat id>"
+API_TOKEN="<TOKEN>"
+CHAT_ID="<ID>"
 
 send() {
         DATA=$1
@@ -168,7 +170,7 @@ send() {
 
 if [ "$ERROR" != 0 ]; then
         ERROR_MESSAGE=$"Bootstrap Failed -  ERROR $ERROR - $MESSAGE"
-        `echo $ERROR_MESSAGE | mail -s 'NavCoin Network Monitor' <email address>`
+        `echo $ERROR_MESSAGE | mail -s 'NavCoin Network Monitor' <EMAIL>`
 	send "Height: $BLOCKCOUNT %0AHash: $BLOCKHASH %0AServer Timestamp: $NOW %0ANavExplorer Hash: $NAVEXBLOCKHASH %0ANavExplorer Timestamp: $NAVEXTIMESTAMP %0ANavExplorer Confirmations: $NAVEXCONFIRMS %0ACryptoID Hash: $CIDBLOCKHASH %0ACryptoID Timestamp: $CIDBLOCKTIME %0ABlock Tolerance: $TOLERANCE %0A%0A@proletesseract"
 else
 	send "Height: $BLOCKCOUNT %0AHash: $BLOCKHASH"
