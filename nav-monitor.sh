@@ -5,7 +5,7 @@ echo $(date -u) "Running Network Monitor"
 
 VERSION="4.7.2"
 USER="<USER>"
-TOLERANCE=10
+TOLERANCE=15
 MAX_TRIES=3
 MONITOR_TRIES=0
 MAX_API_TRIES=5
