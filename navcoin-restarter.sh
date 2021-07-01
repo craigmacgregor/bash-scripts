@@ -37,7 +37,7 @@ done
 
 echo $(date -u) "unlocking for staking"
 
-/<path>/navcoin-cli walletpassphrase '<password>' 999999999 true
+UNLOCK=`/<path>/navcoin-cli walletpassphrase '<password>' 999999999 true`
 
 SLEEP3=0
 while [ "$SLEEP3" -lt 6 ]; do
