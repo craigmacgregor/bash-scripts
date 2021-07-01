@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+echo "#######################################################"
+
 echo $(date -u) "stopping navcoind"
 
 /<path>/navcoin-cli stop
@@ -22,22 +24,22 @@ echo $(date -u) "starting navcoind"
 /<path>/navcoind &
 
 SLEEP2=0
-while [ "$SLEEP2" -lt 30 ]; do
+while [ "$SLEEP2" -lt 15 ]; do
 	START=$(/<path>/navcoin-cli getinfo | jq -r '.testnet')
         if [ "$START" == "false" ]; then
 		echo "startup successful"
-                SLEEP2=30
+                SLEEP2=15
         else    
                 echo "waiting for startup..." 
                 SLEEP2=$[$SLEEP2+1]
-                sleep 30s
+                sleep 60s
         fi
 
 done
 
 echo $(date -u) "unlocking for staking"
 
-UNLOCK=`/<path>/navcoin-cli walletpassphrase '<password>' 999999999 true`
+UNLOCK=$(/<path>/navcoin-cli walletpassphrase '<password>' 999999999 true)
 
 SLEEP3=0
 while [ "$SLEEP3" -lt 6 ]; do
@@ -54,3 +56,6 @@ done
 
 
 echo $(date -u) "restarted complete"
+
+echo "#######################################################"
+
